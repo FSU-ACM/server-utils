@@ -22,7 +22,7 @@ services:
                 failure_action: rollback
     webhook:
         image: thecatlady/webhook:latest
-        command: -hooks=hooks.yml -hotreload
+        command: -verbose -hooks=hooks.yml -hotreload
         environment:
             - TZ=America/New_York
         volumes:
