@@ -7,7 +7,30 @@ services:
             LETSENCRYPT_HOST: agon.cs.fsu.edu
             VIRTUAL_HOST: agon.cs.fsu.edu
         volumes:
+            - ./config/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
             - ./html:/usr/share/nginx/html:ro
+        networks:
+            - frontend
+            - utils-backend
+        deploy:
+            replicas: 2
+            rollback_config:
+                parallelism: 0
+            update_config:
+                parallelism: 1
+                delay: 5s
+                failure_action: rollback
+    webhook:
+        image: thecatlady/webhook:latest
+        command: -hooks=hooks.yml -hotreload
+        environment:
+            - TZ=America/New_York
+        volumes:
+            - ./config/webhook:/config:ro
+            - ./scripts:/var/scripts:ro
+            - ../Programming-Contest-Suite/deploy/prod/contestsuite:/var/contestsuite:ro
+        networks:
+            - utils-backend
         deploy:
             replicas: 2
             rollback_config:
@@ -17,6 +40,8 @@ services:
                 delay: 5s
                 failure_action: rollback
 networks:
-    default:
+    frontend:
         external: true
         name: proxied-apps
+    utils-backend:
+        name: utils-backend
